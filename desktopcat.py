@@ -1,71 +1,116 @@
+#### YOUR-FRIEND-CAT-ON-DESKTOP 
+#### MADE BY VALENTIN AND PUBLISHED ON GITHUB PAGE OF MY ACCOUNT ( ValentinMENDIss )
+#### LAST TIME EDITED ON:  23.06.2024
+### I Hope you would enjoy. And DO NOT hurt a cat, pls. ... :)
+## Have Fun :) 
+#
+
+
 import pygame
 import os
 import win32gui, win32api, win32con
 import random
+import subprocess
+import pyautogui
 
-pygame.init()  
 
-#SCREEN_WIDTH =  128      
-#SCREEN_HEIGHT = 128  
+from win32api import GetSystemMetrics
+
+
+
+pygame.init()                                                   # Initialize Pygame Engine
+ 
 SCREEN = pygame.display.set_mode((128, 128), pygame.NOFRAME) 
+pygame.display.set_caption('Cat')
 
 
-run = True
+## VARIABLES ##
+
+# Coordinates
 x_pos = 0 
 y_pos = 0
+
+# Generate random numbers
 random_pos = random.randint(0, 500)
+time_wait = random.randint(4500, 30000 )            # Time to wait ( clock variable ) is being generated in range of numbers ( 4.5 seconds and 30 seconds )     ( in ms )
 
 
+# GET COORDINATES:
+# Display Resolution ( Gets Resolution of your Monitor / Display  Automaticly )
+DISPLAY_X = GetSystemMetrics(0)
+DISPLAY_Y = GetSystemMetrics(1)
 
-#SCREEN.position = (x_pos, y_pos)
+
+# Loop Variable
+run = True
+
+# Cat's Variables 
+velocity = 1
+
+# SCREEN.position = (x_pos, y_pos)
+
 
 CAT = pygame.image.load(os.path.join("graphics", "orange_cat_idle(128x128).png"))
 
 transparency_color = (255, 0, 128)
 dark_red = (139, 0, 0)
 
+####################################################################
+
 hwnd = pygame.display.get_wm_info()["window"]
 win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
                        win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
 win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(*transparency_color), 0, win32con.LWA_COLORKEY)
 
-clock = pygame.time.Clock()
-    
 
+clock = pygame.time.Clock()
+
+
+## VARIABLES ##
+X_COORDINATES = 0
+Y_COORDINATES = 0
+
+
+## MAIN LOOP ##
 while run:
     
     for event in pygame.event.get():                                                # For every Event in Pygame: 
         if event.type == pygame.QUIT:                                               # If event QUIT was used(if button quit was pressed):
             run = False
-     
-    WINDOW_X_POSITION = 0
-    WINDOW_Y_POSITION = 0
 
-    WINDOW_2_X_POSITION = 0
-    WINDOW_2_Y_POSITION = 0
+    window = pyautogui.getWindowsWithTitle("Cat")[0]
+    rect = window._rect  
+          
 
-    if WINDOW_X_POSITION == WINDOW_2_X_POSITION:
-        WINDOW_X_POSITION = random.randint(0, 1800)
-        WINDOW_Y_POSITION = random.randint(0, 1000)
+    if not abs(rect.x - X_COORDINATES) < velocity or not abs(X_COORDINATES - rect.x) < velocity:        # If rect.x coordinates - X_Coordinates is not smaller than velocity it self ( it means if it is bigger than velocity ):
+        if rect.x >= X_COORDINATES: 
+            rect.x -= velocity 
+        elif rect.x <= X_COORDINATES:
+            rect.x += velocity
 
-        WINDOW_2_X_POSITION = random.randint(0, 1800)
-        WINDOW_2_Y_POSITION = random.randint(0, 1000)
+    if not abs(rect.y - Y_COORDINATES) < velocity or not abs(Y_COORDINATES - rect.y) < velocity:
+        if rect.y >= Y_COORDINATES:
+            rect.y -= velocity
+        elif rect.y <= Y_COORDINATES:
+            rect.y += velocity
 
-    elif WINDOW_X_POSITION != WINDOW_2_X_POSITION:
-        WINDOW_X_POSITION -= WINDOW_2_X_POSITION
-        
+    if abs(rect.x - X_COORDINATES ) < velocity or abs(X_COORDINATES - rect.x ) < velocity and abs(rect.y - Y_COORDINATES) < velocity or abs(Y_COORDINATES - rect.y) < velocity:
+        pygame.time.wait(time_wait)
+        X_COORDINATES = random.randint(0, DISPLAY_X)
+        Y_COORDINATES = random.randint(0, DISPLAY_Y)
+
+    
+
 
 
 
     win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)    
-    win32gui.MoveWindow(hwnd, WINDOW_X_POSITION, WINDOW_Y_POSITION, 128, 128, True)
+    # win32gui.MoveWindow(hwnd, 0, 0, 128, 128, True)
 
     SCREEN.fill(transparency_color)
-    
-    
-    
+       
     SCREEN.blit(CAT, (0, 0))
-    
+
 
     clock.tick(60)
     pygame.display.update()
