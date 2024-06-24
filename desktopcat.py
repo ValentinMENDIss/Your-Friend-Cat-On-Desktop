@@ -32,7 +32,7 @@ y_pos = 0
 
 # Generate random numbers
 random_pos = random.randint(0, 500)
-time_wait = random.randint(450, 3000 )            # Time to wait ( clock variable ) is being generated in range of numbers ( 4.5 seconds and 30 seconds )     ( in ms )
+time_wait = random.randint(4500, 30000)            # Time to wait ( clock variable ) is being generated in range of numbers ( 4.5 seconds and 30 seconds )     ( in ms )
 
 
 # GET COORDINATES:
