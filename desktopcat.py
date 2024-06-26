@@ -16,6 +16,8 @@ import pyautogui
 
 from win32api import GetSystemMetrics
 from time import sleep, time
+from pygame import mixer 
+
 
 
 pygame.init()                                                   # Initialize Pygame Engine
@@ -54,10 +56,16 @@ CAT_IDLE = pygame.image.load(os.path.join("graphics", "orange_cat_idle(128x128).
 CAT_SLEEPING = pygame.image.load(os.path.join("graphics", "orange_cat_sleeping.png"))
 
 
+CAT_IDLE_RECT = CAT_IDLE.get_rect()
+CAT_SLEEPING_RECT = CAT_SLEEPING.get_rect()
+
 ## COLOURS ## 
 transparency_color = (255, 0, 128)
 dark_red = (139, 0, 0)
 
+## SFXs / MUSIC ##
+mixer.init()
+mixer.music.set_volume(0.7)
 ####################################################################
 
 hwnd = pygame.display.get_wm_info()["window"]
@@ -87,6 +95,9 @@ CAT_DIRECTION = LEFT
 CAT_SLEEPS = False
 CAT_IDLE_OR_MOVING = True
 
+SFX_MEOW = False
+
+
 ## MAIN LOOP ##
 while run:
 
@@ -95,7 +106,12 @@ while run:
     for event in pygame.event.get():                                                # For every Event in Pygame: 
         if event.type == pygame.QUIT:                                               # If event QUIT was used(if button quit was pressed):
             run = False
+        if event.type == pygame.MOUSEBUTTONDOWN: 
+            if CAT_IDLE_RECT.collidepoint(event.pos) or CAT_SLEEPING_RECT.collidepoint(event.pos): 
+                SFX_MEOW = True
 
+
+    
     window = pyautogui.getWindowsWithTitle("Cat")[0]
     rect = window._rect
     
@@ -155,7 +171,7 @@ while run:
         CAT_SLEEPS = True
         CAT_IDLE_OR_MOVING = False
 
-        if time() - Clock > random.randint(45, 300):    # random number would be generated for how long does it need to wait / perform an action ( numbers are in range of  ( 45s - 300s ( 5min )  )
+        if pygame.time.get_ticks() - Clock > random.randint(45, 300):    # random number would be generated for how long does it need to wait / perform an action ( numbers are in range of  ( 45s - 300s ( 5min )  )
             action = random.randint(1, 100)
             CAT_SLEEPS = False
 
@@ -180,6 +196,12 @@ while run:
     if CAT_SLEEPS == True:
         SCREEN.blit(CAT_SLEEPING, (0, 0))
 
+    ## SFXs / MUSIC ##
+
+    if SFX_MEOW == True:
+        mixer.music.load("cat-purring-and-meow.mp3")  
+        mixer.music.play()
+        SFX_MEOW = False
 
     clock.tick(60)
     pygame.display.update()
