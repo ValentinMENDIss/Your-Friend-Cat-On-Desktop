@@ -51,13 +51,19 @@ velocity = 1
 
 
 ## SPRITES ( IMAGES FOR CERTAIN ACTIONS ) ##
-CAT_IDLE = pygame.image.load(os.path.join("graphics", "orange_cat_idle(128x128).png"))
+CAT_IDLE_IMG = pygame.image.load(os.path.join("graphics", "orange_cat_idle(128x128).png"))
 
-CAT_SLEEPING = pygame.image.load(os.path.join("graphics", "orange_cat_sleeping.png"))
+CAT_MOVING_IMG = [pygame.image.load(os.path.join("graphics", "orange_cat_walking1.png")),
+              pygame.image.load(os.path.join("graphics", "orange_cat_walking2.png"))]
+
+CAT_MOVING_RIGHT_IMG = [pygame.image.load(os.path.join("graphics", "orange_cat_walking1_right.png")),
+                        pygame.image.load(os.path.join("graphics", "orange_cat_walking2_right.png"))]
+
+CAT_SLEEPING_IMG = pygame.image.load(os.path.join("graphics", "orange_cat_sleeping.png"))
 
 
-CAT_IDLE_RECT = CAT_IDLE.get_rect()
-CAT_SLEEPING_RECT = CAT_SLEEPING.get_rect()
+CAT_IDLE_RECT = CAT_IDLE_IMG.get_rect()
+CAT_SLEEPING_RECT = CAT_SLEEPING_IMG.get_rect()
 
 ## COLOURS ## 
 transparency_color = (255, 0, 128)
@@ -80,27 +86,51 @@ clock = pygame.time.Clock()
 
 ## VARIABLES ##
 
-# Coordinates
-X_COORDINATES = 0
-Y_COORDINATES = 0
+# Coordinates #
+X_COORDINATES = random.randint(0, DISPLAY_X)
+Y_COORDINATES = random.randint(0, DISPLAY_Y)
 
-# Other
+# Other #
 action = random.randint(1, 100)     # Generate Random Number ( you can see this as percentage % ), needed for giving an action to the cat :)
 Clock = time()
 
 LEFT = 0                    # DEGREES DOESN'T MATTER ( THEY ARE THERE TO GIVE NEW VARIABLE FOR CAT_DIRECTION :) )
 RIGHT = 90
 CAT_DIRECTION = LEFT
+ACTION = True
 
+# Cat actions #
 CAT_SLEEPS = False
-CAT_IDLE_OR_MOVING = True
+CAT_MOVING = True
+CAT_IDLE = False
 
+# SFXs / Music #
 SFX_MEOW = False
 
+
+
+
+## Timer ( for Animation ) ##
+
+fps = 0
+timer_in_seconds = 0
 
 ## MAIN LOOP ##
 while run:
 
+    ## TIMER FOR ANIMATION,  MADE BY MYSELF :)   ( because I couldn't figure out the other ways, they haven't worked for me.) ( NEEDED FOR ANIMATION )  ##
+    
+    fps += 2                                        # TWEAKED: to make images change faster
+    if fps == 60:
+        fps = 0
+        timer_in_seconds += 1
+    
+
+    if timer_in_seconds >= 2:                       # If it have been more than 1 second than, ...
+        timer_in_seconds = 0                        # Resetting the timer
+    
+########################################################
+    
     MOUSE_POS = pyautogui.position()
 
     for event in pygame.event.get():                                                # For every Event in Pygame: 
@@ -117,26 +147,37 @@ while run:
     
 
     if action in range(1, 70):       
-        CAT_IDLE_OR_MOVING = True
-        if not abs(rect.x - X_COORDINATES) < velocity or not abs(X_COORDINATES - rect.x) < velocity:        # If rect.x coordinates - X_Coordinates is not smaller than velocity it self ( it means if it is bigger than velocity ):
-            if rect.x >= X_COORDINATES: 
-                CAT_DIRECTION = LEFT
-                rect.x -= velocity 
-            elif rect.x <= X_COORDINATES:
-                CAT_DIRECTION = RIGHT
-                rect.x += velocity
+        CAT_IDLE = False
+        CAT_MOVING = True
+        
+        
+        if ACTION == True:       
+            if not abs(rect.x - X_COORDINATES) < velocity or not abs(X_COORDINATES - rect.x) < velocity:        # If rect.x coordinates - X_Coordinates is not smaller than velocity it self ( it means if it is bigger than velocity ):
+                if rect.x >= X_COORDINATES: 
+                    CAT_DIRECTION = LEFT
+                    rect.x -= velocity 
+                elif rect.x <= X_COORDINATES:
+                    CAT_DIRECTION = RIGHT
+                    rect.x += velocity
 
-        if not abs(rect.y - Y_COORDINATES) < velocity or not abs(Y_COORDINATES - rect.y) < velocity:
-            if rect.y >= Y_COORDINATES:
-                rect.y -= velocity
-            elif rect.y <= Y_COORDINATES:
-                rect.y += velocity
-
-        if abs(rect.x - X_COORDINATES ) < velocity or abs(X_COORDINATES - rect.x ) < velocity and abs(rect.y - Y_COORDINATES) < velocity or abs(Y_COORDINATES - rect.y) < velocity:
-            pygame.time.wait(time_wait)
-            X_COORDINATES = random.randint(0, DISPLAY_X)
-            Y_COORDINATES = random.randint(0, DISPLAY_Y)
-            action = random.randint(1, 100)
+            if not abs(rect.y - Y_COORDINATES) < velocity or not abs(Y_COORDINATES - rect.y) < velocity:
+                if rect.y >= Y_COORDINATES:
+                    rect.y -= velocity
+                elif rect.y <= Y_COORDINATES:
+                    rect.y += velocity
+            if abs(rect.x - X_COORDINATES ) < velocity or abs(X_COORDINATES - rect.x ) < velocity and abs(rect.y - Y_COORDINATES) < velocity or abs(Y_COORDINATES - rect.y) < velocity:
+                ACTION = False
+                CAT_MOVING = False
+                CAT_IDLE = True
+        
+        elif ACTION == False:
+        
+                pygame.time.wait(time_wait)
+                X_COORDINATES = random.randint(0, DISPLAY_X)
+                Y_COORDINATES = random.randint(0, DISPLAY_Y)
+                
+                ACTION = True
+                action = random.randint(1, 100)
 
     
 
@@ -145,31 +186,43 @@ while run:
     MOUSE_Y = MOUSE_POS[1]
 
     if action in range(81, 100):
-        CAT_IDLE_OR_MOVING = True
+        CAT_IDLE = False
+        CAT_MOVING = True
+        
+        if ACTION == True:
+            if rect.x != MOUSE_X:
+                if rect.x >= MOUSE_X:
+                    CAT_DIRECTION = LEFT
 
-        if rect.x != MOUSE_X:
-            if rect.x >= MOUSE_X:
-                CAT_DIRECTION = LEFT
+                    rect.x -= velocity
+                elif rect.x <= MOUSE_X:
+                    CAT_DIRECTION = RIGHT
 
-                rect.x -= velocity
-            elif rect.x <= MOUSE_X:
-                CAT_DIRECTION = RIGHT
-
-                rect.x += velocity
-        if rect.y != MOUSE_Y:
-            if rect.y >= MOUSE_Y:
-                rect.y -= velocity
-            elif rect.y <= MOUSE_Y:
-                rect.y += velocity
-        if rect.x == MOUSE_X and rect.y == MOUSE_Y:
+                    rect.x += velocity
+            if rect.y != MOUSE_Y:
+                if rect.y >= MOUSE_Y:
+                    rect.y -= velocity
+                elif rect.y <= MOUSE_Y:
+                    rect.y += velocity
+            if rect.x == MOUSE_X and rect.y == MOUSE_Y:
+                ACTION = False
+                CAT_MOVING = False
+                CAT_IDLE = True        
+        
+        elif ACTION == False:
+            
+            
             pygame.time.wait(time_wait)
+            
+            ACTION = True
             action = random.randint(1, 100)
 
      
     if action in range(70, 81):
         
+        CAT_MOVING = False
+        CAT_IDLE = False
         CAT_SLEEPS = True
-        CAT_IDLE_OR_MOVING = False
 
         if pygame.time.get_ticks() - Clock > random.randint(45, 300):    # random number would be generated for how long does it need to wait / perform an action ( numbers are in range of  ( 45s - 300s ( 5min )  )
             action = random.randint(1, 100)
@@ -181,20 +234,27 @@ while run:
     # win32gui.MoveWindow(hwnd, 0, 0, 128, 128, True)
 
     SCREEN.fill(transparency_color)
+ 
+    ## CAT ANIMATION IMAGES ##
+    CAT_MOVING_ANIM = CAT_MOVING_IMG[timer_in_seconds // 1] 
+    CAT_MOVING_ANIM_RIGHT = CAT_MOVING_RIGHT_IMG[timer_in_seconds // 1]
+    
+    ## CAT ACTIONS ##
         
-    if CAT_IDLE_OR_MOVING == True:
+    if CAT_MOVING == True:
         if CAT_DIRECTION == RIGHT:
-            CAT_IDLE_COPY = CAT_IDLE.copy()
+ 
+            SCREEN.blit(CAT_MOVING_ANIM_RIGHT, (0, 0))
 
-            CAT_RIGHT = pygame.transform.flip(CAT_IDLE_COPY, True, False)
-            SCREEN.blit(CAT_RIGHT, (0, 0))
+        if CAT_DIRECTION == LEFT:  
+            SCREEN.blit(CAT_MOVING_ANIM, (0, 0))
 
-
-        if CAT_DIRECTION == LEFT:
-            SCREEN.blit(CAT_IDLE, (0, 0))
+        
+    if CAT_IDLE == True:
+        SCREEN.blit(CAT_IDLE_IMG, (0, 0))
 
     if CAT_SLEEPS == True:
-        SCREEN.blit(CAT_SLEEPING, (0, 0))
+        SCREEN.blit(CAT_SLEEPING_IMG, (0, 0))
 
     ## SFXs / MUSIC ##
 
